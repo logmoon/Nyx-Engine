@@ -1,26 +1,27 @@
-#include <stdio.h>
+# include <stdio.h>
 # include <stdlib.h>
 # include <stdbool.h>
 
 # include "scene_manager_internal.h"
 # include "scene_manager.h"
+# include "../ecs/ecs.h"
 # include "../utils.h"
 # include "../global.h"
 
 bool initialized = false;
 
 // External
-Scene* create_scene(scene_init_func init, scene_update_func update, scene_shutdown_func shutdown)
+Scene create_scene(scene_init_func init, scene_update_func update, scene_shutdown_func shutdown)
 {
 	if (!initialized)
 	{
 		ERROR_EXIT("\nThe scene manager isn't initialized, can't create a scene");
 	}
 
-	Scene* scene = {0};
-	scene->init_func = init;
-	scene->update_func = update;
-	scene->shutdown_func = shutdown;
+	Scene scene = { 0 };
+	scene.init_func = init;
+	scene.update_func = update;
+	scene.shutdown_func = shutdown;
 
 	return scene;
 }
@@ -39,22 +40,24 @@ void set_active_scene(Scene* scene)
 
 
 // Internal
-bool scene_manager_init(Scene_Manager* scene_manager)
+bool scene_manager_init()
 {
 	if (initialized)
 	{
 		ERROR_RETURN(false, "\nThe scene manager is already initialized");
 	}
 
-	scene_manager->capacity = 3;
-	scene_manager->stack = malloc(scene_manager->capacity * sizeof(Scene*));
+	global.scene_manager = malloc(sizeof(Scene_Manager));
 
-	if (scene_manager->stack == NULL)
+	global.scene_manager->capacity = 3;
+	global.scene_manager->stack = malloc(global.scene_manager->capacity * sizeof(Scene*));
+
+	if (global.scene_manager->stack == NULL)
 	{
 		ERROR_RETURN(false, "\nCouldn't Initialize the scene manager, not enough memory");
 	}
 
-	scene_manager->top = -1;
+	global.scene_manager->top = -1;
 	initialized = true;
 	return true;
 }
@@ -70,6 +73,8 @@ int scene_manager_shutdown(Scene_Manager* scene_manager)
 
 	free(scene_manager->stack);
 	scene_manager->stack = NULL;
+	free(global.scene_manager);
+	global.scene_manager = NULL;
 	initialized = false;
 	return 0;
 }
@@ -98,6 +103,13 @@ int scene_manager_push(Scene_Manager* scene_manager, Scene* scene)
 	scene_manager->top++;
 	scene_manager->stack[scene_manager->top] = scene;
 
+	// ECS
+	// Initializing the entites
+	if (!ecs_scene_push())
+	{
+		ERROR_EXIT("\nCouldn't initialize the entities, when loading new scene");
+	}
+
 	if (scene->init_func) scene->init_func();
 
 	return scene_manager->top;
@@ -109,6 +121,10 @@ int scene_manager_pop(Scene_Manager* scene_manager)
 	Scene* top = scene_manager_top(scene_manager);
 	
 	if (top->shutdown_func) top->shutdown_func();
+
+	// ECS
+	// Resetting the entites
+	ecs_scene_pop();
 
 	scene_manager->stack[scene_manager->top] = NULL;
 	scene_manager->top--;

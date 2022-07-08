@@ -3,6 +3,7 @@
 # include "renderer/renderer_internal.h"
 # include "core/core_internal.h"
 # include "scene_manager/scene_manager_internal.h"
+# include "ecs/ecs.h"
 
 typedef struct global
 {
@@ -12,7 +13,9 @@ typedef struct global
 	Scene_Manager* scene_manager;
 	// Renderer
 	Render_State renderer_state;
-	// Input
+	// ECS
+	Ecs_State ecs_state;
+	// IO
 	char* prefs_directory;
 
 }Global;

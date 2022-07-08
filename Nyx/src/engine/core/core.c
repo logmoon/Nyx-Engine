@@ -1,13 +1,25 @@
+# include <stdio.h>
+# include <stdlib.h>
+# include <math.h>
+
 # include "core_internal.h"
 # include "core.h"
 # include "../utils.h"
 # include "../global.h"
 # include "../renderer/renderer_internal.h"
 # include "../io/io.h"
+# include "../ecs/ecs.h"
 # include "../scene_manager/scene_manager_internal.h"
 # include "../window_events/window_events.h"
 
-# define FPS_CAP 60.0
+# define FPS_CAP 200.0
+
+typedef struct test_component
+{
+	f32 x;
+	f32 y;
+
+}Test_Component;
 
 void core_init(char* company_name, char* application_name, u32 window_width, u32 window_height, bool fullscreen)
 {
@@ -27,13 +39,17 @@ void core_init(char* company_name, char* application_name, u32 window_width, u32
 		ERROR_EXIT("\nCouldn't initialize core, error in the io module");
 	}
 
+	// ECS
+	if (!ecs_init(1, sizeof(Test_Component)))
+	{
+		ERROR_EXIT("\n Couldn't initialize the ecs module");
+	}
+
 	// Scene Manager
-	Scene_Manager* scene_manager;
-	if (!scene_manager_init(scene_manager))
+	if (!scene_manager_init())
 	{
 		ERROR_EXIT("\nCouldn't initialize core, error in the scene manager module");
 	}
-	global.scene_manager = scene_manager;
 }
 
 void core_update()
@@ -52,8 +68,8 @@ void core_update()
 	f64 delta_time = 1 / FPS_CAP;
 
 	f64 current_time = SDL_GetTicks64() * 0.001;
-	// The accumulator represents how much time is required before another physics+update step can be taken.
-	// The entire point of it is to decouple the physics+update and the rendering frame rates.
+	// The accumulator represents how much time is required before another physics step can be taken.
+	// The entire point of it is to decouple the physics and the rendering frame rates.
 	f64 accumulator = 0.0;
 
 	while (pump_events())
@@ -71,24 +87,29 @@ void core_update()
 		current_time = new_time;
 		accumulator += frame_time;
 
+		// TODO Fix the timstep, it ain't right
+
 		// Getting the currently active scene
 		Scene* top = scene_manager_top(global.scene_manager);
 
-		// Physics and update loop
+		// Physics
 		while (accumulator >= delta_time)
 		{
-			// Physics
+			// Physics System
 			// TODO
 
-			// Calling the active scene's update
-			top->update_func(time, delta_time);
-			
 			time += delta_time;
 			accumulator -= delta_time;
 		}
 
-		// Rendering
+		// Calling the active scene's update
+		top->update_func(time, delta_time);
+
+		// Rendering Systems
 		// TODO
+		// Just some place holder stuff
+		SDL_RenderClear(global.renderer_state.renderer);
+		SDL_RenderPresent(global.renderer_state.renderer);
 	}
 }
 
@@ -96,6 +117,9 @@ void core_shutdown(void)
 {
 	// Scene Manager
 	scene_manager_shutdown(global.scene_manager);
+
+	//ECS
+	ecs_shutdown();
 
 	// IO
 	io_shutdown();

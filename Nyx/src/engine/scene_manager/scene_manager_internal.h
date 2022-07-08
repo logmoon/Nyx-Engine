@@ -20,12 +20,12 @@ typedef struct scene
 typedef struct scene_manager
 {
 	Scene** stack;
-	int capacity;
-	int top;
+	u32 capacity;
+	u32 top;
 
 }Scene_Manager;
 
-bool scene_manager_init(Scene_Manager* scene_manager);
+bool scene_manager_init();
 int scene_manager_shutdown(Scene_Manager* scene_manager);
 int scene_manager_scale(Scene_Manager* scene_manager);
 int scene_manager_push(Scene_Manager* scene_manager, Scene* scene);

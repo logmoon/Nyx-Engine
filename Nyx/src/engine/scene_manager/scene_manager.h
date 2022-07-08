@@ -17,5 +17,5 @@ typedef struct scene
 }Scene;
 # endif
 
-Scene* create_scene(scene_init_func, scene_update_func, scene_shutdown_func);
+Scene create_scene(scene_init_func, scene_update_func, scene_shutdown_func);
 void set_active_scene(Scene* scene);

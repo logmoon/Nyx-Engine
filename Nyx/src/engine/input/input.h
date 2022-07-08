@@ -4,6 +4,8 @@
 # include "../../../../include/SDL2/SDL_events.h"
 # include "../../../../include/SDL2/SDL_mouse.h"
 
+# ifndef MOUSE_BUTTON_DEFINDED
+# define MOUSE_BUTTON_DEFINDED
 typedef enum mouse_buttons
 {
     MOUSE_BUTTON_LEFT,
@@ -12,6 +14,7 @@ typedef enum mouse_buttons
 	MOUSE_BUTTON_MAX_BUTTONS
 
 } Mouse_Buttons;
+# endif
 
 bool key_was_down(SDL_KeyCode key);
 bool key_is_down(SDL_KeyCode key);

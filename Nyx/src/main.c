@@ -1,4 +1,3 @@
-#include "engine/scene_manager/scene_manager_internal.h"
 # include <stdio.h>
 # include <stdbool.h>
 # define SDL_MAIN_HANDLED
@@ -8,140 +7,97 @@
 # include "engine/ecs/ecs.h"
 # include "engine/utils.h"
 # include "engine/global.h"
-
-typedef struct test_component
-{
-	f32 x;
-	f32 y;
-
-}Test_Component;
+# include "engine/base_components/base_components.h"
+# include "engine/renderer/renderer.h"
+# include "engine/renderer/camera.h"
 
 Scene scene_one, scene_two;
+SDL_Texture* player_tex;
+Sprite player_sprite;
+Sprite test_sprite;
+Position* player_pos;
 
 /*
  *
- *
  * -------- SCENE ONE --------
- *
  *
  */
 void scene_one_init(void)
 {
-	// Create and initilize the entities
-	// NOTE: Entities need to have a clear id so your can directly reference them in the other scene functions
+	global.level_width = 1280;
+	global.level_height = 720;
 
-	printf("\nInitializing scene one");
+	printf("\nLoading a texture");
+	player_tex = renderer_load_texture("Assets/Nyx_Dude.png");
+	SDL_Rect player_rect = { .x = 0, .y = 0, .w = 32, .h = 32 };
+	SDL_Rect rect = { .x = 0, .y = 0, .w = 200, .h = 200 };
+
+	player_sprite = renderer_create_sprite(player_tex, player_rect);
+	test_sprite = renderer_create_sprite(player_tex, rect);
+	Position pos = { .x = 0, .y = 0 };
+
+	Entity player = ecs_create_entity();
+	ecs_add_component(player, POSITION_COMPONENT, &pos);
+	ecs_add_component(player, SPRITE_COMPONENT, &player_sprite);
+
+	player_pos = (Position*)ecs_get_component(0, POSITION_COMPONENT);
+
+	camera_init(player_pos);
 }
 void scene_one_update(f32 t, f32 dt)
 {
-	// Go Crazy
-	// Should be able to access entities of this scene
-	// Call custom systems for custom components
-
-	if (mouse_button_is_down(MOUSE_BUTTON_LEFT) && !mouse_button_was_down(MOUSE_BUTTON_LEFT))
+	if (key_is_down(SDL_SCANCODE_D))
 	{
-		for (int i = 0; i < 1000; i++)
-		{
-			printf("\n------------------------------------------------------");
-			printf("\nCreating entity");
-			Test_Component pos = { .x = 69, .y = 420 };
-			Entity e = ecs_create_entity();
-			if (e != -1)
-			{
-				printf("\nSuccessfully created entity: %d", e);
-				if (ecs_add_component(e, 0, &pos))
-				{
-					printf("\nSuccessfully added component: %d", 0);
-				}
-			}
-			else
-			{
-				printf("\nCouldn't create entity");
-			}
-		}
+		player_pos->x += 120 * dt;
+	}
+	if (key_is_down(SDL_SCANCODE_A))
+	{
+		player_pos->x -= 120 * dt;
+	}
+	if (key_is_down(SDL_SCANCODE_W))
+	{
+		player_pos->y += 120 * dt;
+	}
+	if (key_is_down(SDL_SCANCODE_S))
+	{
+		player_pos->y -= 120 * dt;
 	}
 
-	if (mouse_button_is_down(MOUSE_BUTTON_RIGHT) && !mouse_button_was_down(MOUSE_BUTTON_RIGHT))
-	{
-		Ecs_Query_Result* query = ecs_query(1, 0);
-
-		printf("\nFound %u entities with component: %u", query->count, 0);
-	}
-
-	if (key_is_down(SDLK_a) && !key_was_down(SDLK_a))
+	if (key_is_down(SDL_SCANCODE_L) && !key_was_down(SDL_SCANCODE_L))
 	{
 		set_active_scene(&scene_two);
 	}
 }
+void scene_one_draw(void)
+{
+	renderer_draw_sprite(0, 0, test_sprite);
+	renderer_draw_sprite(200, 30, test_sprite);
+	renderer_draw_sprite(50, -10, player_sprite);
+	renderer_draw_sprite(60, -20, player_sprite);
+}
 void scene_one_shutdown(void)
 {
-	// Deallocate any memory, and shutdown
-	printf("\nShutting down scene one");
 }
-
-
-
 /*
  *
- *
- * -------- SCENE TWO --------
- *
- *
+ * -------- SCENE TWO -------- 
  */
 void scene_two_init(void)
 {
-	// Create and initilize the entities
-	// NOTE: Entities need to have a clear id so your can directly reference them in the other scene functions
-
-	printf("\nInitializing scene two");
 }
 void scene_two_update(f32 t, f32 dt)
 {
-	// Go Crazy
-	// Should be able to access entities of this scene
-	// Call custom systems for custom components
-
-	if (mouse_button_is_down(MOUSE_BUTTON_LEFT) && !mouse_button_was_down(MOUSE_BUTTON_LEFT))
-	{
-		for (int i = 0; i < 1000; i++)
-		{
-			printf("\n------------------------------------------------------");
-			printf("\nCreating entity");
-			Test_Component pos = { .x = 69, .y = 420 };
-			Entity e = ecs_create_entity();
-			if (e != -1)
-			{
-				printf("\nSuccessfully created entity: %d", e);
-				if (ecs_add_component(e, 0, &pos))
-				{
-					printf("\nSuccessfully added component: %d", 0);
-				}
-			}
-			else
-			{
-				printf("\nCouldn't create entity");
-			}
-		}
-	}
-
-	if (mouse_button_is_down(MOUSE_BUTTON_RIGHT) && !mouse_button_was_down(MOUSE_BUTTON_RIGHT))
-	{
-		Ecs_Query_Result* query = ecs_query(1, 0);
-
-		printf("\nFound %u entities with component: %u", query->count, 0);
-	}
-
-	if (key_is_down(SDLK_a) && !key_was_down(SDLK_a))
+	if (key_is_down(SDL_SCANCODE_L) && !key_was_down(SDL_SCANCODE_L))
 	{
 		set_active_scene(&scene_one);
 	}
 }
+void scene_two_draw(void)
+{
+}
 void scene_two_shutdown(void)
 {
-	// Deallocate any memory, and shutdown
-	printf("\nShutting down scene two");
 }
-
 
 
 int main()
@@ -149,13 +105,15 @@ int main()
 	// Initializing the application
 	core_init("UseCondomsKid",
 			"Nyx Game",
+			854,
+			480,
 			1280,
 			720,
 			false);
 
 	// Creating the scenes
-	scene_one = create_scene(&scene_one_init, &scene_one_update, &scene_one_shutdown);
-	scene_two = create_scene(&scene_two_init, &scene_two_update, &scene_two_shutdown);
+	scene_one = create_scene(&scene_one_init, &scene_one_update, &scene_one_draw, &scene_one_shutdown);
+	scene_two = create_scene(&scene_two_init, &scene_two_update, &scene_two_draw, &scene_two_shutdown);
 
 	// Setting the entry scene
 	set_active_scene(&scene_one);

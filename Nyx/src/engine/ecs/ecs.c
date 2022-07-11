@@ -6,12 +6,10 @@
 # include "../utils.h"
 # include "../global.h"
 
-//TODO: remove this, and change refs to global.ecs_state
-
 bool ecs_init(u32 component_count, ...)
 {
 	// Allocation memory for the stack
-	global.ecs_state.stack = malloc(component_count);
+	global.ecs_state.stack = malloc(component_count * sizeof(void*));
 
 	if (global.ecs_state.stack == NULL)
 	{
@@ -38,10 +36,10 @@ bool ecs_init(u32 component_count, ...)
 		size_t component_size = va_arg(ap, size_t);
 		
 		global.ecs_state.component_store.sizes[i] = component_size;
-		global.ecs_state.component_store.capacity[i] = ECS_INITIAL_COMPONENT_PER_ENTITY;
+		global.ecs_state.component_store.capacity[i] = ECS_INITIAL_COMPONENT_COUNT;
 		global.ecs_state.component_store.top[i] = 0;
 
-		global.ecs_state.stack[i] = malloc(ECS_INITIAL_COMPONENT_PER_ENTITY * component_size);
+		global.ecs_state.stack[i] = malloc(ECS_INITIAL_COMPONENT_COUNT * component_size);
 
 		if (global.ecs_state.stack[i] == NULL)
 		{
@@ -200,7 +198,7 @@ bool ecs_add_component(Entity entity_id, u32 component_id, void* data)
 		if (global.ecs_state.stack[component_id] == NULL)
 		{
 			// Couldn't reallocate memory
-			printf("\n>> Couldn't reallocate memory for component data");
+			printf("\n>> Couldn't reallocate memory for component:%u", component_id);
 			return false;
 		}
 		global.ecs_state.component_store.capacity[component_id] *= ECS_COMPONENT_EXPAND_MULTIPLIER;

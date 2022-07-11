@@ -1,4 +1,5 @@
 # include <stdbool.h>
+# include <stdio.h>
 # include "input.h"
 # include "input_internal.h"
 
@@ -14,10 +15,10 @@ void handle_input_event(SDL_Event event)
     {
 		// Mouse And Keyboard Presses
         case SDL_KEYDOWN:
-            input_state.keyboard_current.keys[event.key.keysym.sym] = true;
+            input_state.keyboard_current.keys[event.key.keysym.scancode] = true;
         break;
         case SDL_KEYUP:
-            input_state.keyboard_current.keys[event.key.keysym.sym] = false;
+            input_state.keyboard_current.keys[event.key.keysym.scancode] = false;
         break;
         case SDL_MOUSEMOTION:
             input_state.mouse_current.x = event.motion.x;
@@ -33,19 +34,19 @@ void handle_input_event(SDL_Event event)
 }
 
 
-bool key_was_down(SDL_KeyCode key)
+bool key_was_down(SDL_Scancode key)
 {
 	return input_state.keyboard_previous.keys[key];
 }
-bool key_is_down(SDL_KeyCode key)
+bool key_is_down(SDL_Scancode key)
 {
 	return input_state.keyboard_current.keys[key];
 }
-bool key_was_up(SDL_KeyCode key)
+bool key_was_up(SDL_Scancode key)
 {
 	return !input_state.keyboard_previous.keys[key];
 }
-bool key_is_up(SDL_KeyCode key)
+bool key_is_up(SDL_Scancode key)
 {
 	return !input_state.keyboard_current.keys[key];
 }

@@ -16,10 +16,10 @@ typedef enum mouse_buttons
 } Mouse_Buttons;
 # endif
 
-bool key_was_down(SDL_KeyCode key);
-bool key_is_down(SDL_KeyCode key);
-bool key_was_up(SDL_KeyCode key);
-bool key_is_up(SDL_KeyCode key);
+bool key_was_down(SDL_Scancode key);
+bool key_is_down(SDL_Scancode key);
+bool key_was_up(SDL_Scancode key);
+bool key_is_up(SDL_Scancode key);
 
 i16 get_mouse_position_x();
 i16 get_mouse_position_y();

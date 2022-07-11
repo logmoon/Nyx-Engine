@@ -5,13 +5,14 @@
 # include "scene_manager_internal.h"
 # include "scene_manager.h"
 # include "../ecs/ecs.h"
+# include "../renderer/renderer_internal.h"
 # include "../utils.h"
 # include "../global.h"
 
 bool initialized = false;
 
 // External
-Scene create_scene(scene_init_func init, scene_update_func update, scene_shutdown_func shutdown)
+Scene create_scene(scene_init_func init, scene_update_func update, scene_draw_func draw, scene_shutdown_func shutdown)
 {
 	if (!initialized)
 	{
@@ -21,6 +22,7 @@ Scene create_scene(scene_init_func init, scene_update_func update, scene_shutdow
 	Scene scene = { 0 };
 	scene.init_func = init;
 	scene.update_func = update;
+	scene.draw_func = draw;
 	scene.shutdown_func = shutdown;
 
 	return scene;
@@ -110,6 +112,13 @@ int scene_manager_push(Scene_Manager* scene_manager, Scene* scene)
 		ERROR_EXIT("\nCouldn't initialize the entities, when loading new scene");
 	}
 
+	// Renderer
+	// Initializing the texutres
+	if (!renderer_textures_init())
+	{
+		ERROR_EXIT("\nCouldn't initialize the textures, when loading new scene");
+	}
+
 	if (scene->init_func) scene->init_func();
 
 	return scene_manager->top;
@@ -125,6 +134,10 @@ int scene_manager_pop(Scene_Manager* scene_manager)
 	// ECS
 	// Resetting the entites
 	ecs_scene_pop();
+
+	// Renderer
+	// Freeing the texutres
+	renderer_free_textures();
 
 	scene_manager->stack[scene_manager->top] = NULL;
 	scene_manager->top--;

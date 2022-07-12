@@ -31,7 +31,7 @@ bool renderer_init(char* window_name, u32 native_width, u32 native_height, u32 w
 void renderer_shutdown(SDL_Window* window, SDL_Renderer* renderer);
 
 bool renderer_textures_init();
-SDL_Texture* renderer_register_texture(char* path);
+u32 renderer_register_texture(char* path);
 void renderer_free_textures(void);
 
 void renderer_render_sprite_system(void);

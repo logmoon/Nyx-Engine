@@ -5,6 +5,7 @@
 # include "core/core_internal.h"
 # include "scene_manager/scene_manager_internal.h"
 # include "ecs/ecs.h"
+# include "logger/logger.h"
 
 typedef struct global
 {
@@ -23,7 +24,11 @@ typedef struct global
 	Ecs_State ecs_state;
 	// IO
 	char* prefs_directory;
+	// Logging
+	Log_Level log_level;
 
 }Global;
 
 extern Global global;
+
+void global_set_level_dimentions(u32 level_width, u32 level_height);

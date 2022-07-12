@@ -9,6 +9,8 @@
 # include "../../../../include/SDL2/SDL_image.h"
 
 
+Texture_Stack texture_stack;
+
 // Camera
 void camera_init(Position* target)
 {
@@ -52,9 +54,13 @@ void camera_update()
 
 
 // External
-SDL_Texture* renderer_load_texture(char* path)
+u32 renderer_load_texture(char* path)
 {
 	return renderer_register_texture(path);
+}
+SDL_Texture* renderer_get_texture(u32 texture_id)
+{
+	return texture_stack.textures[texture_id];
 }
 void renderer_draw_sprite(int x, int y, Sprite sprite)
 {
@@ -81,9 +87,9 @@ void renderer_draw_sprite(int x, int y, Sprite sprite)
 			sprite.flip_mode);
 }
 
-Sprite renderer_create_sprite(SDL_Texture* tex, SDL_Rect rect)
+Sprite renderer_create_sprite(u32 texture_id, SDL_Rect rect)
 {
-	Sprite sprite = { .texture = tex, .rect = rect,
+	Sprite sprite = { .texture = renderer_get_texture(texture_id), .rect = rect,
 		.rotation_angle = 0.0,
 		.blend_mode = SDL_BLENDMODE_BLEND,
 		.flip_mode = SDL_FLIP_NONE };
@@ -110,8 +116,6 @@ void renderer_flip_sprite(Sprite sprite, SDL_RendererFlip flip_mode)
 
 
 // Internal
-
-Texture_Stack texture_stack;
 
 bool renderer_init(char* window_name, u32 native_width, u32 native_height, u32 window_width, u32 window_height, bool fullscreen)
 {
@@ -166,16 +170,25 @@ bool renderer_init(char* window_name, u32 native_width, u32 native_height, u32 w
 			global.renderer_state.native_screen_width,
 			global.renderer_state.native_screen_height);
 
+	//Initialize PNG loading
+    int imgFlags = IMG_INIT_PNG;
+    if( !( IMG_Init( imgFlags ) & imgFlags ) )
+    {
+        ERROR_RETURN(false, "SDL_image could not initialize! SDL_image Error: %s\n", IMG_GetError());
+	}
+	printf("\nSuccessfully Created the renderer");
+
 	return true;
 }
 
 void renderer_shutdown(SDL_Window* window, SDL_Renderer* renderer)
 {
-	SDL_DestroyWindow(window);
-	window = NULL;
+	SDL_DestroyWindow(window); window = NULL;
 
 	SDL_DestroyRenderer(renderer);
 	renderer = NULL;
+
+	IMG_Quit();
 }
 
 bool renderer_textures_init()
@@ -193,11 +206,10 @@ bool renderer_textures_init()
 	texture_stack.count = 0;
 	texture_stack.cap = INITIAL_TEXTURE_COUNT;
 
-	printf("\nInitialized textures");
 	return true;
 }
 
-SDL_Texture* renderer_register_texture(char* path)
+u32 renderer_register_texture(char* path)
 {
 	// Maximum textures reached, reallocating memory
 	if (texture_stack.count == texture_stack.cap)
@@ -208,7 +220,7 @@ SDL_Texture* renderer_register_texture(char* path)
 		{
 			// Couldn't allocate memory for textures
 			printf("\nCouldn't reallocate memory for textures");
-			return NULL;
+			return -1;
 		}
 
 		texture_stack.cap *= 2;
@@ -217,9 +229,7 @@ SDL_Texture* renderer_register_texture(char* path)
 	texture_stack.textures[texture_stack.count] = IMG_LoadTexture(global.renderer_state.renderer, path);
 	texture_stack.count += 1;
 
-	printf("\nRegistered a texture");
-
-	return texture_stack.textures[texture_stack.count - 1];
+	return texture_stack.count - 1;
 }
 
 void renderer_free_textures(void)
@@ -231,8 +241,6 @@ void renderer_free_textures(void)
 	}
 
 	free(texture_stack.textures);
-
-	printf("\nfreed the registered textures");
 }
 
 // ECS

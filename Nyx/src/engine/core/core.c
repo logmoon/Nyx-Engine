@@ -8,11 +8,13 @@
 # include "../global.h"
 # include "../renderer/renderer_internal.h"
 # include "../renderer/camera_internal.h"
+# include "../audio/audio_internal.h"
 # include "../io/io.h"
 # include "../ecs/ecs.h"
 # include "../scene_manager/scene_manager_internal.h"
 # include "../window_events/window_events.h"
 # include "../base_components/base_components.h"
+# include "../logger/logger.h"
 
 # define FPS_CAP 200.0
 
@@ -34,6 +36,11 @@ void core_init(char* company_name,
 		ERROR_EXIT("\nCouldn't initialize core, error in the renderer module");
 	}
 
+	if (!audio_init())
+	{
+		ERROR_EXIT("\nCouldn't initialize core, errot in the audio module");
+	}
+
 	// IO
 	if (!io_init(company_name, application_name))
 	{
@@ -51,6 +58,9 @@ void core_init(char* company_name,
 	{
 		ERROR_EXIT("\nCouldn't initialize core, error in the scene manager module");
 	}
+
+	// Logger
+	logger_init(LOG_LEVEL_DEBUG);
 }
 
 void core_update()
@@ -136,6 +146,12 @@ void core_shutdown(void)
 	// IO
 	io_shutdown();
 
+	// Audio
+	audio_shutdown();
+
 	// Renderer
 	renderer_shutdown(global.renderer_state.window, global.renderer_state.renderer);
+
+	// SDL
+	SDL_Quit();
 }

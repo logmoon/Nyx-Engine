@@ -2,6 +2,7 @@
 # include <stdio.h>
 # include "input.h"
 # include "input_internal.h"
+# include "../global.h"
 
 
 Input_State input_state = {0};
@@ -51,13 +52,21 @@ bool key_is_up(SDL_Scancode key)
 	return !input_state.keyboard_current.keys[key];
 }
 
-i16 get_mouse_position_x()
+i16 get_mouse_screen_position_x()
 {
 	return input_state.mouse_current.x;
 }
-i16 get_mouse_position_y()
+i16 get_mouse_screen_position_y()
 {
 	return input_state.mouse_current.y;
+}
+i16 get_mouse_world_position_x()
+{
+	return input_state.mouse_current.x - (global.renderer_state.native_screen_width / 2.0);
+}
+i16 get_mouse_world_position_y()
+{
+	return -input_state.mouse_current.y + (global.renderer_state.native_screen_height / 2.0);
 }
 
 bool mouse_button_was_down(Mouse_Buttons button)

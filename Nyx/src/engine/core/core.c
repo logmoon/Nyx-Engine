@@ -8,12 +8,14 @@
 # include "../global.h"
 # include "../renderer/renderer_internal.h"
 # include "../renderer/camera_internal.h"
+# include "../renderer/animator_internal.h"
 # include "../audio/audio_internal.h"
 # include "../io/io.h"
 # include "../ecs/ecs.h"
 # include "../scene_manager/scene_manager_internal.h"
 # include "../window_events/window_events.h"
 # include "../base_components/base_components.h"
+# include "../physics/physics.h"
 # include "../logger/logger.h"
 
 # define FPS_CAP 200.0
@@ -48,7 +50,14 @@ void core_init(char* company_name,
 	}
 
 	// ECS
-	if (!ecs_init(4, sizeof(Position), sizeof(Sprite), sizeof(Test_Component_1), sizeof(Test_Component_2)))
+	if (!ecs_init(7,
+				sizeof(Position),
+				sizeof(Sprite),
+				sizeof(Animator),
+				sizeof(Rigidbody), 
+				sizeof(Circle_Collider),
+				sizeof(Text),
+				sizeof(Image)))
 	{
 		ERROR_EXIT("\n Couldn't initialize the ecs module");
 	}
@@ -74,8 +83,6 @@ void core_update()
 	//
 	// * Draw on the screen
 	
-	// A reference to the active scene
-
 	// Initializing time variables
 	f64 time = 0.0;
 	f64 delta_time = 1 / FPS_CAP;
@@ -106,7 +113,13 @@ void core_update()
 			if (quit_flagged) break;
 
 			// Physics System
-			// TODO
+			const f32 physics_sub_dt = delta_time / PHYSICS_SUB_STEPS;
+			for (u32 i = PHYSICS_SUB_STEPS; i--;)
+			{
+				physics_apply_gravity_system();
+				physics_solve_collision_system();
+				physics_update_positions_system(physics_sub_dt);
+			}
 
 			// Calling the active scene's update
 			if (scene_manager_top(global.scene_manager)->update_func)
@@ -123,13 +136,18 @@ void core_update()
 		// Rendering
 		// Clearing the renderer
 		SDL_RenderClear(global.renderer_state.renderer);
+		// Animation
+		animator_animate_system();
 		// Sprite Component Rendering
-		renderer_render_sprite_system();
+		renderer_render_sprites_system();
 		// Calling the active scene's Rendering function
 		if (scene_manager_top(global.scene_manager)->draw_func)
 			scene_manager_top(global.scene_manager)->draw_func();
 		// UI Rendering
-		// TODO
+		// Rendering text
+		renderer_render_text_system();
+		// Rendering Images
+		renderer_render_images_system();
 
 		SDL_RenderPresent(global.renderer_state.renderer);
 	}

@@ -6,6 +6,7 @@
 # include "scene_manager.h"
 # include "../ecs/ecs.h"
 # include "../renderer/renderer_internal.h"
+# include "../renderer/animator_internal.h"
 # include "../utils.h"
 # include "../global.h"
 
@@ -118,6 +119,13 @@ int scene_manager_push(Scene_Manager* scene_manager, Scene* scene)
 	{
 		ERROR_EXIT("\nCouldn't initialize the textures, when loading new scene");
 	}
+	
+	// Animator
+	// Initializing the sprite animator
+	if (!animator_init())
+	{
+		ERROR_EXIT("\nCouldn't initialize the sprite animator, when loading new scene");
+	}
 
 	if (scene->init_func) scene->init_func();
 
@@ -138,6 +146,10 @@ int scene_manager_pop(Scene_Manager* scene_manager)
 	// Renderer
 	// Freeing the texutres
 	renderer_free_textures();
+
+	// Animator
+	// Freeing the animators and animations
+	animator_free();
 
 	scene_manager->stack[scene_manager->top] = NULL;
 	scene_manager->top--;

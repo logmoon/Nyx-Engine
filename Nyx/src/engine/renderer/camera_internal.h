@@ -10,4 +10,4 @@ typedef struct camera
 
 }Camera;
 
-void camera_update();
+void camera_update(void);

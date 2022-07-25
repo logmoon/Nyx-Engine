@@ -30,13 +30,13 @@ void audio_play_music(u32 music_track, i8 loops)
 {
 	Mix_PlayMusic(audio_stack.music[music_track], loops);
 }
-void audio_fade_in_music(u32 music_track, i8 loops, u8 fade_duration)
+void audio_fade_in_music(u32 music_track, i8 loops, int fade_duration)
 {
-	Mix_FadeInMusic(audio_stack.music[music_track], loops, fade_duration * 1000);
+	Mix_FadeInMusic(audio_stack.music[music_track], loops, fade_duration);
 }
-void audio_fade_out_music(u8 fade_duration)
+void audio_fade_out_music(int fade_duration)
 {
-	Mix_FadeOutMusic(fade_duration * 1000);
+	Mix_FadeOutMusic(fade_duration);
 }
 void audio_set_music_volume(i16 volume_percent)
 {
@@ -171,6 +171,6 @@ void audio_shutdown(void)
 	audio_stack.sfx_count = 0;
 	audio_stack.sfx_cap = 0;
 
-	// SDL_mixer quit subsystem
+	// Quit the SDL_mixer subsystem
 	Mix_Quit();
 }

@@ -18,3 +18,10 @@ typedef int64_t i64;
 // Floating numbers
 typedef float f32;
 typedef double f64;
+
+// Math
+typedef struct vector2
+{
+	f32 x;
+	f32 y;
+}Vector2;

@@ -5,7 +5,14 @@
 # include "../../../../include/SDL2/SDL_mixer.h"
 # include "../types.h"
 
-// Loading
+/*
+ *
+ * NOTE: Audio allocated only gets freed when the applications closes,
+ * unlike the other modules, audio isn't freed when switching from one scene to the other
+ *
+*/
+
+
 /**
  * Loads a sound effect file
  *
@@ -22,7 +29,6 @@ u32 audio_load_sfx(char* path);
  */
 u32 audio_load_music(char* path);
 
-// SFX
 /**
  * Plays a sound effect
  *
@@ -38,8 +44,6 @@ void audio_play_sfx(u32 sfx, u8 repeat_times);
  */
 void audio_set_sfx_volume(i16 volume_percent);
 
-// Music
-// SFX
 /**
  * Plays a music track
  *
@@ -53,16 +57,16 @@ void audio_play_music(u32 music_track, i8 loops);
  *
  * @param music_track is the id of the music track
  * @param loops the number of times the music should loop, -1 to loop infinitely (not really)
- * @param fade_duration is the fade in duration in seconds
+ * @param fade_duration is the fade in duration in milliseconds
  */
-void audio_fade_in_music(u32 music_track, i8 loops, u8 fade_duration);
+void audio_fade_in_music(u32 music_track, i8 loops, int fade_duration);
 
 /**
  * Fades out and stops a music track
  *
- * @param fade_duration is the fade out duration in seconds
+ * @param fade_duration is the fade out duration in milliseconds
  */
-void audio_fade_out_music(u8 fade_duration);
+void audio_fade_out_music(int fade_duration);
 
 /**
  * Sets the volume of the music

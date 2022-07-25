@@ -38,4 +38,9 @@ typedef struct input_state
 
 } Input_State;
 
+
+/**
+ * Handles the user's inputs
+ *
+ */
 void handle_input_event(SDL_Event event);

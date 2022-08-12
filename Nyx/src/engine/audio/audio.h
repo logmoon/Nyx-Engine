@@ -56,7 +56,7 @@ void audio_play_music(u32 music_track, i8 loops);
  * Fades in a music track
  *
  * @param music_track is the id of the music track
- * @param loops the number of times the music should loop, -1 to loop infinitely (not really)
+ * @param loops the number of times the music should loop, -1 to loop infinitely (kinda)
  * @param fade_duration is the fade in duration in milliseconds
  */
 void audio_fade_in_music(u32 music_track, i8 loops, int fade_duration);

@@ -4,16 +4,19 @@
 # include "animator_internal.h"
 # include "animator.h"
 # include "../ecs/ecs.h"
+# include "../utils.h"
 
 // Internal
 Animator_Stack stack;
 
 bool animator_init(void)
 {
+	LOG_INFO("(F:%s | F:%s | L:%u) Initializing the sprite animator.", __FILE__, __FUNCTION__, __LINE__);
+
 	if (stack.initialized)
 	{
-		printf("\nAnimator stack is already initialized");
-		return true;
+		WARN_RETURN(true, "(F:%s | F:%s | L:%u) Animator stack is already initialized.",
+				__FILE__, __FUNCTION__, __LINE__);
 	}
 
 	stack.initialized = false;
@@ -23,8 +26,8 @@ bool animator_init(void)
 	if (stack.animators == NULL)
 	{
 		// Couldn't allocate memory for animators
-		printf("\nCouldn't allocate memory for animators");
-		return false;
+		ERROR_RETURN(false, "(F:%s | F:%s | L:%u) Couldn't allocate memory for animators.",
+				__FILE__, __FUNCTION__, __LINE__);
 	}
 
 	stack.count = 0;
@@ -35,6 +38,7 @@ bool animator_init(void)
 }
 void animator_free(void)
 {
+	LOG_INFO("(F:%s | F:%s | L:%u) Shutting down the sprite animator.", __FILE__, __FUNCTION__, __LINE__);
 	u32 i;
 
 	for (i = 0; i < stack.count; i++)
@@ -78,8 +82,8 @@ Animator* animator_create_animator(void)
 {
 	if (!stack.initialized)
 	{
-		printf("\nThe animator stack is not initialized, can't create animator");
-		return NULL;
+		ERROR_RETURN(NULL, "(F:%s | F:%s | L:%u) The animator stack is not initialized, can't create animator.",
+				__FILE__, __FUNCTION__, __LINE__);
 	}
 
 	// Checking if the stack is full, if so we reallocate more memory for it
@@ -91,8 +95,8 @@ Animator* animator_create_animator(void)
 		if (stack.animators == NULL)
 		{
 			// Reallocation failed
-			printf("\nCouldn't reallocate memory for the animator stack");
-			return NULL;
+			ERROR_RETURN(NULL, "(F:%s | F:%s | L:%u) Couldn't reallocate memory for the animator stack.",
+					__FILE__, __FUNCTION__, __LINE__);
 		}
 
 		stack.cap *= 2;
@@ -105,8 +109,8 @@ Animator* animator_create_animator(void)
 	if (animator.animations == NULL)
 	{
 		// Couldn't allocate memory for the animations
-		printf("\nCouldn't allocate memory for the animations");
-		return NULL;
+		ERROR_RETURN(NULL, "(F:%s | F:%s | L:%u) Couldn't allocate memory for the animations.",
+				__FILE__, __FUNCTION__, __LINE__);
 	}
 
 	animator.animation_count = 0;
@@ -142,7 +146,8 @@ u32 animator_add_animation(Animator* animator,
 		if (animator->animations == NULL)
 		{
 			// couldn't reallocate memory
-			return -1;
+			ERROR_RETURN(-1, "(F:%s | F:%s | L:%u) Couldn't reallocate memory for animations.",
+					__FILE__, __FUNCTION__, __LINE__);
 		}
 
 		animator->animation_cap *= 2;

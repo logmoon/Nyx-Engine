@@ -19,7 +19,6 @@ typedef struct texture_color
 	u8 a;
 
 }Texture_Color;
-
 typedef struct sprite
 {
 	u32 texture_id;
@@ -32,34 +31,7 @@ typedef struct sprite
 
 }Sprite;
 
-// UI
-# define TEXT_COMPONENT 5
-typedef struct text
-{
-	u32 texture_id;
-	Texture_Color color;
-	f32 size;
-	u32 width;
-	u32 height;
-	bool is_ui;
-	u32 sorting_layer;
-
-}Text;
-# define IMAGE_COMPONENT 6
-typedef struct image
-{
-	u32 texture_id;
-	Texture_Color color;
-	f32 size;
-	u32 width;
-	u32 height;
-	bool is_ui;
-	u32 sorting_layer;
-
-}Image;
-
 # define ANIMATOR_COMPONENT 2
-
 typedef enum animation_type
 {
 	NO_LOOP,
@@ -67,7 +39,6 @@ typedef enum animation_type
 	PING_PONG
 
 }Animation_Type;
-
 typedef struct animation
 {
 	SDL_Rect first_frame;
@@ -76,7 +47,6 @@ typedef struct animation
 	Animation_Type animation_type;
 
 }Animation;
-
 typedef struct animator
 {
 	Animation* animations;
@@ -90,7 +60,35 @@ typedef struct animator
 
 }Animator;
 
-// Physics
-# define RIGIDBODY_COMPONENT 3
-# define CIRCLE_COLLIDER_COMPONENT 4
+// UI
+# define TEXT_COMPONENT 3
+typedef struct text
+{
+	u32 texture_id;
+	Texture_Color color;
+	f32 size;
+	u32 width;
+	u32 height;
+	bool is_ui;
+	u32 sorting_layer;
 
+}Text;
+
+# define IMAGE_COMPONENT 4
+typedef struct image
+{
+	u32 texture_id;
+	Texture_Color color;
+	f32 size;
+	u32 width;
+	u32 height;
+	bool is_ui;
+	u32 sorting_layer;
+
+}Image;
+
+
+// Physics
+# define RIGIDBODY_COMPONENT 5
+# define CIRCLE_COLLIDER_COMPONENT 6
+# define CONSTRAINT_COMPONENT 7

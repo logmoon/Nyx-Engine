@@ -2,19 +2,19 @@
 # include "../types.h"
 
 # define GRAVITY -1000
-# define PHYSICS_SUB_STEPS 4
+# define PHYSICS_SUB_STEPS 1
 
-typedef struct velet_object
+typedef struct verlet_object
 {
 	Vector2 current_position;
 	Vector2 previous_position;
 	Vector2 acceleration;
 
-}Velet_Object;
+}Verlet_Object;
 
 typedef struct rigidbody
 {
-	Velet_Object obj;
+	Verlet_Object obj;
 	f32 gravity_scale;
 
 }Rigidbody;
@@ -25,19 +25,27 @@ typedef struct circle_collider
 
 }Circle_Collider;
 
+typedef enum constraint_type
+{
+	horizontal,
+	vertical
+} Constraint_Type;
 typedef struct constraint
 {
-	Vector2 position;
-	bool horizontal;
-	f32 len;
+	Constraint_Type type;
+	i32 len;
 
 }Constraint;
 
-Rigidbody physics_create_rigidbody(f32 gravity_scale);
+Rigidbody physics_create_rigidbody(f32 starting_x_pos, f32 starting_y_pos, f32 gravity_scale);
 Circle_Collider physics_create_circle_collider(f32 radius);
-void update_position(Velet_Object* obj, f32 dt);
-void accelerate(Velet_Object* obj, Vector2 acceleration);
-void physics_cirlce_collider_solve(Velet_Object* obj1, Circle_Collider collider1, Velet_Object* obj2, Circle_Collider collider2);
+Constraint physics_create_constraint(Constraint_Type type, i32 length);
+
+
+void update_position(Verlet_Object* obj, f32 dt);
+void accelerate(Verlet_Object* obj, Vector2 acceleration);
+void physics_cirlce_collider_solve(Verlet_Object* obj1, Circle_Collider collider1, Verlet_Object* obj2, Circle_Collider collider2);
 void physics_apply_gravity_system();
+void physics_apply_constraints_system();
 void physics_solve_collision_system();
 void physics_update_positions_system(f32 dt);

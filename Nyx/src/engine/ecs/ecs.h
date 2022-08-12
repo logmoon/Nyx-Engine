@@ -1,4 +1,5 @@
 # pragma once
+# include <stddef.h>
 # include "../types.h"
 
 typedef u32 Entity;
@@ -17,7 +18,7 @@ typedef struct entity_store
 typedef struct component_store
 {
 	u32 count;      // The number of components
-	u32* sizes;     // A list that stores the size of each component
+	size_t* sizes;  // A list that stores the size of each component
 	u32* capacity;  // A list that stores the number of component slots are currently used for each component
 	u32* top;       // A list that stores the number of allocated component spaces for each component
 

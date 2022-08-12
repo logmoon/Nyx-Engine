@@ -6,14 +6,16 @@
 # include "../global.h"
 # include "../io/io.h"
 
+bool logger_initialized = false;
 
 void logger_init(Log_Level log_level)
 {
+	logger_initialized = true;
 	global.log_level = log_level;
 }
 void logger_log_message(Log_Level log_level, char* message, ...)
 {
-	if (global.log_level < log_level) return;
+	if (global.log_level < log_level || !logger_initialized) return;
 
 	size_t message_len = strlen(message);
 	if (message_len < 1 || message_len > 4096)
@@ -22,7 +24,12 @@ void logger_log_message(Log_Level log_level, char* message, ...)
 	}
 
 	char path[200];
+
+# ifdef _WIN32
 	snprintf(path, sizeof(path), "%s\\log.log", global.prefs_directory);
+# else
+	snprintf(path, sizeof(path), "%s/log.log", global.prefs_directory);
+# endif
 
 	char time_string[32];
 	time_t result = time(NULL);
@@ -36,16 +43,16 @@ void logger_log_message(Log_Level log_level, char* message, ...)
 		case LOG_LEVEL_NONE:
 			return;
 		case LOG_LEVEL_ERROR:
-			strcpy(level_string, "\n[ERROR]");
+			strcpy(level_string, "[ERROR]");
 			break;
 		case LOG_LEVEL_WARNING:
-			strcpy(level_string, "\n[WARN]");
+			strcpy(level_string, "[WARN]");
 			break;
 		case LOG_LEVEL_INFO:
-			strcpy(level_string, "\n[INFO]");
+			strcpy(level_string, "[INFO]");
 			break;
 		case LOG_LEVEL_DEBUG:
-			strcpy(level_string, "\n[DEBUG]");
+			strcpy(level_string, "[DEBUG]");
 			break;
 		default:
 			return;
@@ -57,7 +64,7 @@ void logger_log_message(Log_Level log_level, char* message, ...)
 	vsnprintf(log_message, sizeof(log_message), message, ap);
     va_end(ap);
 
-	FILE* fp = fopen(path, "a+");
+	FILE* fp = fopen(path, "a");
 	if (!fp || ferror(fp))
 	{
 		return;
@@ -66,6 +73,7 @@ void logger_log_message(Log_Level log_level, char* message, ...)
 	fputs(level_string, fp);
 	fputs(time_string, fp);
 	fputs(log_message, fp);
+	fputs("\n", fp);
 
 	fclose(fp);
 }

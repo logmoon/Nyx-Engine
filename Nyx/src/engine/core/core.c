@@ -16,7 +16,6 @@
 # include "../window_events/window_events.h"
 # include "../base_components/base_components.h"
 # include "../physics/physics.h"
-# include "../logger/logger.h"
 
 # define FPS_CAP 200.0
 
@@ -32,44 +31,47 @@ void core_init(char* company_name,
 	Application_State app = { .company_name = company_name, .application_name = application_name };
 	global.application_state = app;
 
-	// Renderer
-	if (!renderer_init(application_name, native_width, native_height, window_width, window_height, fullscreen))
-	{
-		ERROR_EXIT("\nCouldn't initialize core, error in the renderer module");
-	}
-
-	if (!audio_init())
-	{
-		ERROR_EXIT("\nCouldn't initialize core, errot in the audio module");
-	}
-
 	// IO
 	if (!io_init(company_name, application_name))
 	{
-		ERROR_EXIT("\nCouldn't initialize core, error in the io module");
+		ERROR_EXIT("(F:%s | F:%s | L:%u) Couldn't initialize core, error in the io module.", __FILE__, __FUNCTION__, __LINE__);
+	}
+
+	LOG_INFO("(F:%s | F:%s | L:%u) Initializing the application's core.", __FILE__, __FUNCTION__, __LINE__);
+
+	// Renderer
+	if (!renderer_init(application_name, native_width, native_height, window_width, window_height, fullscreen))
+	{
+		ERROR_EXIT("(F:%s | F:%s | L:%u) Couldn't initialize core, error in the renderer module.", __FILE__, __FUNCTION__, __LINE__);
+	}
+	
+	// Audio
+	if (!audio_init())
+	{
+		ERROR_EXIT("(F:%s | F:%s | L:%u) Couldn't initialize core, errot in the audio module.", __FILE__, __FUNCTION__, __LINE__);
 	}
 
 	// ECS
-	if (!ecs_init(7,
+	if (!ecs_init(8,
 				sizeof(Position),
 				sizeof(Sprite),
 				sizeof(Animator),
+				sizeof(Text),
+				sizeof(Image),
 				sizeof(Rigidbody), 
 				sizeof(Circle_Collider),
-				sizeof(Text),
-				sizeof(Image)))
+				sizeof(Constraint)
+				))
 	{
-		ERROR_EXIT("\n Couldn't initialize the ecs module");
+		ERROR_EXIT("(F:%s | F:%s | L:%u) Couldn't initialize the ecs module.", __FILE__, __FUNCTION__, __LINE__);
 	}
 
 	// Scene Manager
 	if (!scene_manager_init())
 	{
-		ERROR_EXIT("\nCouldn't initialize core, error in the scene manager module");
+		ERROR_EXIT("(F:%s | F:%s | L:%u) Couldn't initialize core, error in the scene manager module.",
+				__FILE__, __FUNCTION__, __LINE__);
 	}
-
-	// Logger
-	logger_init(LOG_LEVEL_DEBUG);
 }
 
 void core_update()
@@ -79,7 +81,7 @@ void core_update()
 	// * Update
 	//		* Physics
 	//		* Input
-	//		* ...
+	//		* Logic
 	//
 	// * Draw on the screen
 	
@@ -91,6 +93,7 @@ void core_update()
 	f64 accumulator = 0.0;
 
 	bool quit_flagged = false;
+	LOG_DEBUG("(F:%s | F:%s | L:%u) Starting the application's main loop...", __FILE__, __FUNCTION__, __LINE__);
 
 	while (!quit_flagged)
 	{
@@ -117,6 +120,7 @@ void core_update()
 			for (u32 i = PHYSICS_SUB_STEPS; i--;)
 			{
 				physics_apply_gravity_system();
+				physics_apply_constraints_system();
 				physics_solve_collision_system();
 				physics_update_positions_system(physics_sub_dt);
 			}
@@ -131,7 +135,6 @@ void core_update()
 			time += delta_time;
 			accumulator -= delta_time;
 		}
-
 
 		// Rendering
 		// Clearing the renderer
@@ -155,20 +158,23 @@ void core_update()
 
 void core_shutdown(void)
 {
+	LOG_INFO("(F:%s | F:%s | L:%u) Shutting down the application's core.",
+				__FILE__, __FUNCTION__, __LINE__);
+
 	// Scene Manager
 	scene_manager_shutdown(global.scene_manager);
 
 	//ECS
 	ecs_shutdown();
 
-	// IO
-	io_shutdown();
-
 	// Audio
 	audio_shutdown();
 
 	// Renderer
-	renderer_shutdown(global.renderer_state.window, global.renderer_state.renderer);
+	renderer_shutdown();
+
+	// IO
+	io_shutdown();
 
 	// SDL
 	SDL_Quit();

@@ -29,7 +29,7 @@ typedef struct texutre_stack
 # define INITIAL_TEXTURE_COUNT 10
 
 bool renderer_init(char* window_name, u32 native_width, u32 native_height, u32 window_width, u32 window_height, bool fullscreen);
-void renderer_shutdown(SDL_Window* window, SDL_Renderer* renderer);
+void renderer_shutdown();
 
 bool renderer_textures_init(void);
 u32 renderer_register_texture(SDL_Texture* texture);

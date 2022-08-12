@@ -10,14 +10,15 @@
 # include "../utils.h"
 # include "../global.h"
 
-bool initialized = false;
+bool sm_initialized = false;
 
 // External
 Scene create_scene(scene_init_func init, scene_update_func update, scene_draw_func draw, scene_shutdown_func shutdown)
 {
-	if (!initialized)
+	if (!sm_initialized)
 	{
-		ERROR_EXIT("\nThe scene manager isn't initialized, can't create a scene");
+		ERROR_EXIT("(F:%s | F:%s | L:%u) The scene manager isn't initialized, can't create a scene.",
+				__FILE__, __FUNCTION__, __LINE__);
 	}
 
 	Scene scene = { 0 };
@@ -31,12 +32,16 @@ Scene create_scene(scene_init_func init, scene_update_func update, scene_draw_fu
 
 void set_active_scene(Scene* scene)
 {
-	if (!initialized)
+	if (!sm_initialized)
 	{
-		ERROR_EXIT("\nThe scene manager isn't initialized");
+		ERROR_EXIT("(F:%s | F:%s | L:%u) The scene manager isn't initialized, can't set an active scene.",
+				__FILE__, __FUNCTION__, __LINE__);
 	}
 
-	scene_manager_pop(global.scene_manager);
+	if (global.scene_manager->top != -1)
+	{
+		scene_manager_pop(global.scene_manager);
+	}
 	scene_manager_push(global.scene_manager, scene);
 }
 
@@ -45,9 +50,12 @@ void set_active_scene(Scene* scene)
 // Internal
 bool scene_manager_init()
 {
-	if (initialized)
+	LOG_INFO("(F:%s | F:%s | L:%u) Initializing the scene manager.", __FILE__, __FUNCTION__, __LINE__);
+
+	if (sm_initialized)
 	{
-		ERROR_RETURN(false, "\nThe scene manager is already initialized");
+		ERROR_RETURN(false, "(F:%s | F:%s | L:%u) The scene manager is already initialized.",
+				__FILE__, __FUNCTION__, __LINE__);
 	}
 
 	global.scene_manager = malloc(sizeof(Scene_Manager));
@@ -57,16 +65,19 @@ bool scene_manager_init()
 
 	if (global.scene_manager->stack == NULL)
 	{
-		ERROR_RETURN(false, "\nCouldn't Initialize the scene manager, not enough memory");
+		ERROR_RETURN(false, "(F:%s | F:%s | L:%u) Couldn't allocate memory for the scene manager's stack.",
+				__FILE__, __FUNCTION__, __LINE__);
 	}
 
 	global.scene_manager->top = -1;
-	initialized = true;
+	sm_initialized = true;
 	return true;
 }
 
 int scene_manager_shutdown(Scene_Manager* scene_manager)
 {
+	LOG_INFO("(F:%s | F:%s | L:%u) Shutting down the scene manager.", __FILE__, __FUNCTION__, __LINE__);
+
 	do
 	{
 		scene_manager_pop(scene_manager);
@@ -78,7 +89,7 @@ int scene_manager_shutdown(Scene_Manager* scene_manager)
 	scene_manager->stack = NULL;
 	free(global.scene_manager);
 	global.scene_manager = NULL;
-	initialized = false;
+	sm_initialized = false;
 	return 0;
 }
 
@@ -90,7 +101,8 @@ int scene_manager_scale(Scene_Manager* scene_manager)
 					scene_manager->capacity * sizeof(Scene*))) == NULL)
 	{
 		scene_manager_shutdown(scene_manager);
-		ERROR_EXIT("\nCouldn't extend the scene manager stack, not enough memory");
+		ERROR_EXIT("(F:%s | F:%s | L:%u) Couldn't extend the scene manager stack, not enough memory.",
+				__FILE__, __FUNCTION__, __LINE__);
 	}
 
 	return scene_manager->capacity;
@@ -110,21 +122,24 @@ int scene_manager_push(Scene_Manager* scene_manager, Scene* scene)
 	// Initializing the entites
 	if (!ecs_scene_push())
 	{
-		ERROR_EXIT("\nCouldn't initialize the entities, when loading new scene");
+		ERROR_EXIT("(F:%s | F:%s | L:%u) Couldn't initialize the entities, when loading new scene.",
+				__FILE__, __FUNCTION__, __LINE__);
 	}
 
 	// Renderer
 	// Initializing the texutres
 	if (!renderer_textures_init())
 	{
-		ERROR_EXIT("\nCouldn't initialize the textures, when loading new scene");
+		ERROR_EXIT("(F:%s | F:%s | L:%u) Couldn't initialize the textures, when loading new scene.",
+				__FILE__, __FUNCTION__, __LINE__);
 	}
 	
 	// Animator
 	// Initializing the sprite animator
 	if (!animator_init())
 	{
-		ERROR_EXIT("\nCouldn't initialize the sprite animator, when loading new scene");
+		ERROR_EXIT("(F:%s | F:%s | L:%u) Couldn't initialize the sprite animator, when loading new scene.",
+				__FILE__, __FUNCTION__, __LINE__);
 	}
 
 	if (scene->init_func) scene->init_func();

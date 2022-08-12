@@ -22,7 +22,8 @@ bool io_init(char* company_name, char* application_name)
     }
 	else
 	{
-		ERROR_RETURN(false, "\nCouldn't create and initialize prefs path");
+		printf("\nCouldn't create and initialize prefs path");
+		return false;
 	}
 
 	return true;

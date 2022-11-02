@@ -4,6 +4,10 @@
 
 SDL_Texture* renderer_get_texture(u32 texture_id);
 
+// Windowing
+bool renderer_set_resolution(u32 w, u32 h);
+bool renderer_set_fullscreen(bool fullscreen);
+
 // Loading
 u32 renderer_load_sprite_texture(char* path);
 bool renderer_load_font(char* font_path, u32 font_size);
@@ -11,7 +15,7 @@ Text renderer_load_text_texture(char* text, f32 text_size, bool is_ui);
 Image renderer_load_image_texture(char* path, f32 image_size, bool is_ui);
 
 // Sprites
-Sprite renderer_create_sprite(u32 texture_id, SDL_Rect rect, u32 sorting_layer, f32 sprite_size);
+Sprite renderer_create_sprite(u32 texture_id, Rect rect, u32 sorting_layer, f32 sprite_size);
 void renderer_draw_sprite(i32 x, i32 y, Sprite sprite);
 void renderer_set_sprite_color(Sprite sprite, Texture_Color color);
 void renderer_flip_sprite(Sprite sprite, SDL_RendererFlip flip_mode);

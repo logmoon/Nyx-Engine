@@ -1,3 +1,4 @@
+# include <stdio.h>
 # include "window_events.h"
 # include "../input/input_internal.h"
 

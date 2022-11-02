@@ -7,8 +7,11 @@ set physics=src\engine\physics\physics.c
 set ecs=src\engine\ecs\ecs.c
 set audio=src\engine\audio\audio.c
 set logger=src\engine\logger\logger.c
+set menu=src\engine\menu\menu.c
 
-set files=src\main.c src\engine\global.c %renderer% %events% %io% %core% %physics% %ecs% %scene_manager% %audio% %logger%
+set game=src\game\sandbox\scene.c src\game\sandbox\main_scene.c
+
+set files=src\game\main.c src\engine\global.c %renderer% %events% %io% %core% %physics% %ecs% %scene_manager% %audio% %logger% %menu% %game%
 
 set libs=D:\NyxEngine\lib\SDL2main.lib D:\NyxEngine\lib\SDL2.lib D:\NyxEngine\lib\SDL2_image.lib D:\NyxEngine\lib\SDL2_mixer.lib D:\NyxEngine\lib\SDL2_ttf.lib
 

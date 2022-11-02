@@ -17,15 +17,31 @@
 # include "../base_components/base_components.h"
 # include "../physics/physics.h"
 
-# define FPS_CAP 200.0
+// REMOVE THIS!!!!
+# include "../../game/sandbox/scene.h"
+
+
+bool quit_flagged = false;
+
+void core_set_fps_cap(f32 fps)
+{
+	global.application_state.fps_cap = fps;
+}
+
+f64 core_get_absolute_time()
+{
+	return SDL_GetTicks64();
+}
+
+void core_exit_application()
+{
+	quit_flagged = true;
+}
 
 void core_init(char* company_name,
 		char* application_name,
 		u32 native_width,
-		u32 native_height,
-		u32 window_width,
-		u32 window_height,
-		bool fullscreen)
+		u32 native_height)
 {
 	// Application
 	Application_State app = { .company_name = company_name, .application_name = application_name };
@@ -40,19 +56,21 @@ void core_init(char* company_name,
 	LOG_INFO("(F:%s | F:%s | L:%u) Initializing the application's core.", __FILE__, __FUNCTION__, __LINE__);
 
 	// Renderer
-	if (!renderer_init(application_name, native_width, native_height, window_width, window_height, fullscreen))
+	if (!renderer_init(application_name, native_width, native_height))
 	{
 		ERROR_EXIT("(F:%s | F:%s | L:%u) Couldn't initialize core, error in the renderer module.", __FILE__, __FUNCTION__, __LINE__);
 	}
+
+	core_set_fps_cap((float)global.renderer_state.monitor_refresh_rate);
 	
 	// Audio
 	if (!audio_init())
 	{
-		ERROR_EXIT("(F:%s | F:%s | L:%u) Couldn't initialize core, errot in the audio module.", __FILE__, __FUNCTION__, __LINE__);
+		ERROR_EXIT("(F:%s | F:%s | L:%u) Couldn't initialize core, error in the audio module.", __FILE__, __FUNCTION__, __LINE__);
 	}
 
 	// ECS
-	if (!ecs_init(8,
+	if (ecs_init(11,
 				sizeof(Position),
 				sizeof(Sprite),
 				sizeof(Animator),
@@ -60,10 +78,12 @@ void core_init(char* company_name,
 				sizeof(Image),
 				sizeof(Rigidbody), 
 				sizeof(Circle_Collider),
-				sizeof(Constraint)
-				))
+				sizeof(Constraint),
+				sizeof(Arrow),
+				sizeof(Enemy),
+				sizeof(Bg)))
 	{
-		ERROR_EXIT("(F:%s | F:%s | L:%u) Couldn't initialize the ecs module.", __FILE__, __FUNCTION__, __LINE__);
+		ERROR_EXIT("(F:%s | F:%s | L:%u) Couldn't initialize core, error in the ecs module.", __FILE__, __FUNCTION__, __LINE__);
 	}
 
 	// Scene Manager
@@ -87,12 +107,19 @@ void core_update()
 	
 	// Initializing time variables
 	f64 time = 0.0;
-	f64 delta_time = 1 / FPS_CAP;
+	f64 delta_time = 0.0;
+	if (global.application_state.fps_cap <= 0)
+	{
+		delta_time = 1 / 2000.0;
+	}
+	else
+	{
+		delta_time = 1 / global.application_state.fps_cap;
+	}
 
 	f64 current_time = SDL_GetTicks64() * 0.001;
 	f64 accumulator = 0.0;
 
-	bool quit_flagged = false;
 	LOG_DEBUG("(F:%s | F:%s | L:%u) Starting the application's main loop...", __FILE__, __FUNCTION__, __LINE__);
 
 	while (!quit_flagged)
@@ -107,7 +134,6 @@ void core_update()
 		}
 
 		accumulator += frame_time;
-
 
 		// Physics
 		while (accumulator >= delta_time)
@@ -164,14 +190,14 @@ void core_shutdown(void)
 	// Scene Manager
 	scene_manager_shutdown(global.scene_manager);
 
-	//ECS
-	ecs_shutdown();
-
 	// Audio
 	audio_shutdown();
 
 	// Renderer
 	renderer_shutdown();
+
+	// Ecs
+	ecs_shutdown();
 
 	// IO
 	io_shutdown();

@@ -4,7 +4,6 @@
 # include "renderer/camera_internal.h"
 # include "core/core_internal.h"
 # include "scene_manager/scene_manager_internal.h"
-# include "ecs/ecs.h"
 # include "logger/logger.h"
 
 typedef struct global
@@ -20,8 +19,6 @@ typedef struct global
 	// Level
 	u32 level_width;
 	u32 level_height;
-	// ECS
-	Ecs_State ecs_state;
 	// IO
 	char* prefs_directory;
 	// Logging

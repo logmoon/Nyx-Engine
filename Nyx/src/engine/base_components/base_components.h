@@ -22,7 +22,7 @@ typedef struct texture_color
 typedef struct sprite
 {
 	u32 texture_id;
-	SDL_Rect rect;
+	Rect rect;
 	Texture_Color color;
 	f64 rotation_angle;
 	SDL_RendererFlip flip_mode;

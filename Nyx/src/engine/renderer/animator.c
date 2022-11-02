@@ -3,6 +3,7 @@
 # include <stdlib.h>
 # include "animator_internal.h"
 # include "animator.h"
+# include "../core/core.h"
 # include "../ecs/ecs.h"
 # include "../utils.h"
 
@@ -170,7 +171,7 @@ void animator_set_active_animation(Animator* animator, u32 animation)
 }
 
 
-void animator_animate(Animator* animator, SDL_Rect* rect)
+void animator_animate(Animator* animator, Rect* rect)
 {
 	if (animator->animation_changed)
 	{
@@ -187,12 +188,12 @@ void animator_animate(Animator* animator, SDL_Rect* rect)
 
 	u32 animation = animator->current_animation;
 
-	if (animator->animation_timer + animator->animations[animation].frame_rate > SDL_GetTicks())
+	if (animator->animation_timer + animator->animations[animation].frame_rate > core_get_absolute_time())
 	{
 		return;
 	}
 
-	animator->animation_timer = SDL_GetTicks();
+	animator->animation_timer = core_get_absolute_time();
 
 
 	switch (animator->animations[animation].animation_type)

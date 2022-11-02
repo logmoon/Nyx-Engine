@@ -63,6 +63,48 @@ SDL_Texture* renderer_get_texture(u32 texture_id)
 	return texture_stack.textures[texture_id];
 }
 
+// Windowing
+bool renderer_set_resolution(u32 w, u32 h)
+{
+	SDL_DisplayMode mode = { .format = SDL_PIXELFORMAT_UNKNOWN, .w = w, .h = h, .refresh_rate = 0, .driverdata = 0 };
+	if (global.renderer_state.fullscreen)
+	{
+		if (SDL_SetWindowDisplayMode(global.renderer_state.window, &mode) != 0)
+		{
+			WARN_RETURN(false, "(F:%s | F:%s | L:%u) Couldn't change the game's resolution, %s.",
+				__FILE__, __FUNCTION__, __LINE__, SDL_GetError());
+		}
+	}
+	else
+	{
+		SDL_SetWindowSize(global.renderer_state.window, w, h);
+	}
+
+	return true;
+}
+bool renderer_set_fullscreen(bool fullscreen)
+{
+	if (global.renderer_state.fullscreen == fullscreen) return true;
+
+	if (fullscreen)
+	{
+		if (SDL_SetWindowFullscreen(global.renderer_state.window, SDL_WINDOW_FULLSCREEN_DESKTOP) != 0)
+		{
+			WARN_RETURN(false, "(F:%s | F:%s | L:%u) Couldn't set the window to fullscreen, %s.",
+				__FILE__, __FUNCTION__, __LINE__, SDL_GetError());
+		}
+	}
+	else
+	{
+		if (SDL_SetWindowFullscreen(global.renderer_state.window, SDL_WINDOW_FULLSCREEN_DESKTOP) != 0)
+		{
+			WARN_RETURN(false, "(F:%s | F:%s | L:%u) Couldn't set the window to windowed, %s.",
+				__FILE__, __FUNCTION__, __LINE__, SDL_GetError());
+		}
+	}
+
+	return true;
+}
 
 u32 renderer_load_sprite_texture(char* path)
 {
@@ -148,7 +190,7 @@ Image renderer_load_image_texture(char* path, f32 image_size, bool is_ui)
 	return data;
 }
 
-Sprite renderer_create_sprite(u32 texture_id, SDL_Rect rect, u32 sorting_layer, f32 sprite_size)
+Sprite renderer_create_sprite(u32 texture_id, Rect rect, u32 sorting_layer, f32 sprite_size)
 {
 	Sprite sprite = { .texture_id = texture_id,
 		.rect = rect,
@@ -188,9 +230,11 @@ void renderer_draw_sprite(i32 x, i32 y, Sprite sprite)
 		sprite.rect.w * sprite.size,
 		sprite.rect.h * sprite.size};
 
+	SDL_Rect sprite_rect = { .x = sprite.rect.x, .y = sprite.rect.y, .w = sprite.rect.w, .h = sprite.rect.h };
+
 	SDL_RenderCopyEx(global.renderer_state.renderer,
 			renderer_get_texture(sprite.texture_id),
-			&sprite.rect,
+			&sprite_rect,
 			&position_rect,
 			sprite.rotation_angle,
 			NULL,
@@ -347,7 +391,7 @@ void renderer_set_image_size(Image data, f32 size)
 
 
 // Internal
-bool renderer_init(char* window_name, u32 native_width, u32 native_height, u32 window_width, u32 window_height, bool fullscreen)
+bool renderer_init(char* window_name, u32 native_width, u32 native_height)
 {
 	SDL_Window *window = NULL;
 	LOG_INFO("(F:%s | F:%s | L:%u) Initializing the renderer.", __FILE__, __FUNCTION__, __LINE__);
@@ -361,14 +405,31 @@ bool renderer_init(char* window_name, u32 native_width, u32 native_height, u32 w
 	LOG_DEBUG("(F:%s | F:%s | L:%u) Successfully Initialized SDL", __FILE__, __FUNCTION__, __LINE__);
 
 	// Creating an SDL window
-	u32 window_flags = SDL_WINDOW_SHOWN | SDL_WINDOW_INPUT_FOCUS | SDL_WINDOW_MOUSE_FOCUS;
-	if (fullscreen) window_flags |= SDL_WINDOW_FULLSCREEN;
+	u32 window_flags = SDL_WINDOW_SHOWN | SDL_WINDOW_INPUT_FOCUS | SDL_WINDOW_MOUSE_FOCUS | SDL_WINDOW_FULLSCREEN_DESKTOP;
+
+	int display_index = 0, mode_index = 0;
+    SDL_DisplayMode mode = { .format = SDL_PIXELFORMAT_UNKNOWN, .w = 0, .h = 0, .refresh_rate = 0, .driverdata = 0 };
+
+	/*
+	int display_count = 0;
+    if ((display_count = SDL_GetNumVideoDisplays()) < 1)
+	{
+		ERROR_RETURN(false, "(F:%s | F:%s | L:%u) Couldn't get the number of video displays from SDL: %s.",
+				__FILE__, __FUNCTION__, __LINE__, SDL_GetError());
+    }
+	*/
+
+    if (SDL_GetDisplayMode(display_index, mode_index, &mode) != 0)
+	{
+		ERROR_RETURN(false, "(F:%s | F:%s | L:%u) Couldn't get the display mode: %s.",
+				__FILE__, __FUNCTION__, __LINE__, SDL_GetError());
+    }
 
 	window = SDL_CreateWindow(window_name,
 			SDL_WINDOWPOS_CENTERED,
 			SDL_WINDOWPOS_CENTERED,
-			window_width,
-			window_height,
+			mode.w,
+			mode.h,
 			window_flags);
 
 	if (window == NULL)
@@ -380,8 +441,11 @@ bool renderer_init(char* window_name, u32 native_width, u32 native_height, u32 w
 
 	global.renderer_state.window = window;
 
-	global.renderer_state.screen_width = window_width;
-	global.renderer_state.screen_height = window_height;
+	global.renderer_state.screen_width = mode.w;
+	global.renderer_state.screen_height = mode.h;
+	global.renderer_state.monitor_refresh_rate = mode.refresh_rate;
+
+	global.renderer_state.fullscreen = true;
 
 	global.renderer_state.native_screen_width = native_width;
 	global.renderer_state.native_screen_height = native_height;
@@ -505,6 +569,7 @@ void renderer_free_textures(void)
 void renderer_render_sprites_system(void)
 {
 	Ecs_Query_Result* sprite_qr = ecs_query(2, POSITION_COMPONENT, SPRITE_COMPONENT);
+
 	const u32 count = sprite_qr->count;
 	u32* ids = malloc(count * sizeof(u32));
 	u32* layers = malloc(count * sizeof(u32));

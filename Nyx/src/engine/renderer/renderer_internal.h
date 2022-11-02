@@ -16,6 +16,10 @@ typedef struct render_state
 	u32 screen_width;
 	u32 screen_height;
 
+	int monitor_refresh_rate;
+
+	bool fullscreen;
+
 } Render_State;
 
 typedef struct texutre_stack
@@ -28,7 +32,7 @@ typedef struct texutre_stack
 
 # define INITIAL_TEXTURE_COUNT 10
 
-bool renderer_init(char* window_name, u32 native_width, u32 native_height, u32 window_width, u32 window_height, bool fullscreen);
+bool renderer_init(char* window_name, u32 native_width, u32 native_height);
 void renderer_shutdown();
 
 bool renderer_textures_init(void);

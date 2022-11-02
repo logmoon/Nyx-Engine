@@ -4,9 +4,9 @@
 
 # include "scene_manager_internal.h"
 # include "scene_manager.h"
-# include "../ecs/ecs.h"
 # include "../renderer/renderer_internal.h"
 # include "../renderer/animator_internal.h"
+# include "../ecs/ecs.h"
 # include "../utils.h"
 # include "../global.h"
 

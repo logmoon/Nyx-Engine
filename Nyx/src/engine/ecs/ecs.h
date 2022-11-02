@@ -1,6 +1,11 @@
-# pragma once
-# include <stddef.h>
-# include "../types.h"
+# ifndef ECS
+# define ECS
+
+# include <stdint.h>
+# include <stdbool.h>
+
+typedef uint32_t u32;
+typedef uint8_t u8;
 
 typedef u32 Entity;
 
@@ -18,7 +23,7 @@ typedef struct entity_store
 typedef struct component_store
 {
 	u32 count;      // The number of components
-	size_t* sizes;  // A list that stores the size of each component
+	u32* sizes;     // A list that stores the size of each component
 	u32* capacity;  // A list that stores the number of component slots are currently used for each component
 	u32* top;       // A list that stores the number of allocated component spaces for each component
 
@@ -55,7 +60,7 @@ typedef struct ecs_state
 
 
 /**
- * Initializes the ecs module on startup
+ * Initializes the ecs module
  *
  * @param component_count is the number of components that will be provided
  * @param ... the size of each component
@@ -63,7 +68,7 @@ typedef struct ecs_state
  */
 bool ecs_init(u32 component_count, ...);
 /**
- * Shuts down the ecs module when the application closes
+ * Shuts down the ecs module
  */
 void ecs_shutdown(void);
 
@@ -133,3 +138,4 @@ void ecs_kill_entity(Entity entity_id);
  */
 Ecs_Query_Result* ecs_query(u32 component_count, ...);
 
+# endif

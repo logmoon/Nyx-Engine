@@ -10,4 +10,4 @@ u32 animator_add_animation(Animator* animator,
 		u32 frame_rate,
 		Animation_Type animation_type);
 void animator_set_active_animation(Animator* animator, u32 animation);
-void animator_animate(Animator* animator, SDL_Rect* rect);
+void animator_animate(Animator* animator, Rect* rect);

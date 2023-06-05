@@ -2,6 +2,8 @@
 A simple game engine written in plain C with SDL2
 ---
 
+**This was an experiment to get myself used to coding in C, and at the same time trying to create a simple 2d game engine. I'm done with this project, but I will definetely give this another try in the future.**
+
 ### Features To Implement
 #### Scene Manager
 - [x] Scene Manager

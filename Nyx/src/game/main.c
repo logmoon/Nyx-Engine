@@ -8,25 +8,55 @@
 # include "../engine/global.h"
 # include "../engine/renderer/renderer.h"
 # include "../engine/logger/logger.h"
-# include "sandbox/main_scene.h"
+
+
+Scene scene_one;
+
+/*
+ *
+ * -------- SCENE ONE --------
+ *
+ */
+void scene_one_init(void)
+{
+	global_set_level_dimentions(1280, 720);
+	camera_init(NULL, 1.0);
+}
+void scene_one_update(f32 t, f32 dt)
+{
+
+}
+void scene_one_draw(void)
+{
+}
+void scene_one_shutdown(void)
+{
+}
+
+
 
 int main()
 {
-	// Initializing the logger
-	logger_init(LOG_LEVEL_DEBUG);
-
 	// Initializing the application
 	core_init("UseCondomsKid",
-			"Game",
-			426,
-			240);
+			"Nyx Game",
+			854,
+			480,
+			1280,
+			720,
+			false);
+
+	// Creating the scenes
+	scene_one = create_scene(&scene_one_init,
+			&scene_one_update,
+			&scene_one_draw,
+			&scene_one_shutdown);
 
 	// Loading a font
 	renderer_load_font("Assets/JetBrainsMono-Medium.ttf", 32);
 
 	// Setting the entry scene
-	Scene main = create_scene(&main_scene_init, &main_scene_update,  &main_scene_render, &main_scene_shutdown);
-	set_active_scene(&main);
+	set_active_scene(&scene_one);
 
 	// Update
 	core_update();
